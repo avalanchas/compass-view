@@ -1,6 +1,6 @@
 # Compass View
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/vlad1m1r990/Lemniscate/blob/master/LICENSE)
-[![](https://jitpack.io/v/arbelkilani/BiColored-Progress.svg)](https://jitpack.io/#arbelkilani/Compass-View)
+[![](https://jitpack.io/v/avalanchas/compass-view.svg)](https://jitpack.io/#avalanchas/compass-view)
 [![API](https://img.shields.io/badge/API-19%2B-green.svg?style=flat)]()
 
 Compass view with styling options. 
