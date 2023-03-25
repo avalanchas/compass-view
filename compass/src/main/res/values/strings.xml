@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">compass</string>
+    <string name="label_east">E</string>
+    <string name="label_north">N</string>
+    <string name="label_west">W</string>
+    <string name="label_south">S</string>
 </resources>

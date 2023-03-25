@@ -11,6 +11,14 @@
 
     <edu.arbelkilani.compass.Compass
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        app:border_color="@android:color/holo_red_light"
+        app:degree_color="@android:color/holo_purple"
+        app:degree_value_color="@android:color/holo_green_dark"
+        app:degrees_step="5"
+        app:orientation_labels_color="@android:color/holo_orange_dark"
+        app:show_border="true"
+        app:show_degree_value="true"
+        app:show_orientation_labels="true" />
 
 </LinearLayout>
