@@ -3,7 +3,7 @@
 [![](https://jitpack.io/v/arbelkilani/BiColored-Progress.svg)](https://jitpack.io/#arbelkilani/Compass-View)
 [![API](https://img.shields.io/badge/API-19%2B-green.svg?style=flat)]()
 
-Compass view with full options style. 
+Compass view with styling options. 
 
 ![compass view](https://i.makeagif.com/media/5-13-2018/LtaULi.gif)
 
@@ -23,7 +23,7 @@ and to your app build.gradle:
 
 ```xml
 dependencies {
-  implementation 'com.github.arbelkilani:Compass-View:v1.1.1'
+  implementation 'com.github.avalanchas:compass-view:2.0.0'
 }
 ```
 
@@ -51,7 +51,7 @@ dependencies {
 
 * **degree_color** (color) - color of compass degree lines
 * **degrees_step** (int) - must be > 0 and < 360 . 
-	enable user to change style by changig degree shown count.   
+	enable user to change style by changing degree shown count.   
 	example : for degrees_step = 90 => only for degrees will be shown.  
 
 * **needle** (drawable) - the animated needle for the compass
