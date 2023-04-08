@@ -14,6 +14,9 @@
         <attr name="degrees_step" format="integer" />
         <attr name="show_border" format="boolean" />
         <attr name="border_color" format="color" />
+        <!-- Precision in decimals after the decimal point. Default is 0. Higher values result in
+            significantly reduced performance -->
+        <attr name="precision" format="integer" />
 
     </declare-styleable>
 

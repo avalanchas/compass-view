@@ -8,7 +8,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
@@ -18,34 +17,40 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import timber.log.Timber
 import java.text.DecimalFormat
-import kotlin.math.roundToLong
+import kotlin.math.absoluteValue
+import kotlin.math.round
 
 private const val NEEDLE_PADDING = 0.17f
 private const val DEGREE = "\u00b0"
 private const val DATA_PADDING = 0.35f
 private const val TEXT_SIZE_FACTOR = 0.014f
 private const val DEFAULT_DEGREES_STEP = 15
+private const val DEFAULT_PRECISION = 0
 private const val DEFAULT_SHOW_ORIENTATION_LABEL = false
 private const val DEFAULT_SHOW_DEGREE_VALUE = false
 private const val DEFAULT_ORIENTATION_LABEL_COLOR = Color.BLACK
 private const val DEFAULT_SHOW_BORDER = false
 private const val DEFAULT_BORDER_COLOR = Color.BLACK
 
-class Compass : RelativeLayout, SensorEventListener {
+class Compass : RelativeLayout {
     private lateinit var mNeedleImageView: ImageView
-    private lateinit var mDegreeTextView: TextView
-    private var mCurrentDegree = 0f
-    private var mShowBorder = false
-    private var mBorderColor = 0
-    private var mDegreesColor = 0
-    private var mShowOrientationLabels = false
-    private var mOrientationLabelsColor = 0
-    private var mDegreeValueColor = 0
-    private var mShowDegreeValue = false
-    private var mDegreesStep = 0
-    private var mNeedle: Drawable? = null
-    private var mCompassListener: CompassListener? = null
+    private lateinit var degreeTextView: TextView
+    private val decimalFormat = DecimalFormat("###.#")
+    private var currentDegree = 0f
+    private var showBorder = false
+    private var borderColor = 0
+    private var degreesColor = 0
+    private var showOrientationLabels = false
+    private var orientationLabelsColor = 0
+    private var degreeValueColor = 0
+    private var showDegreeValue = false
+    private var degreesStep = DEFAULT_DEGREES_STEP
+    private var precision = DEFAULT_PRECISION
+    private var needle: Drawable? = null
+    private var compassListener: CompassListener? = null
+    private var targetBearing: Int = 0
 
     constructor(context: Context) : super(context) {
         init(context, null)
@@ -71,13 +76,37 @@ class Compass : RelativeLayout, SensorEventListener {
         }
     }
 
+    // The listener is an internal object so that the public API isn't polluted by the event methods
+    private val sensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            val newDegree = -(event.values[0].round(precision) + targetBearing)
+            if (currentDegree.absoluteValue == newDegree.absoluteValue) {
+                return
+            }
+            Timber.v(
+                "onSensorChanged called with: currentDegree = %s, degree = %s",
+                currentDegree,
+                newDegree
+            )
+            compassListener?.onSensorChanged(event)
+            onDegreeChanged(newDegree)
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+            compassListener?.onAccuracyChanged(sensor, accuracy)
+        }
+    }
+
     private fun init(context: Context, attrs: AttributeSet?) {
+        if (BuildConfig.DEBUG && Timber.forest().isEmpty()) {
+            Timber.plant(Timber.DebugTree())
+        }
         LayoutInflater.from(context).inflate(R.layout.compass_layout, this, true)
         val manager = getContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         manager.registerListener(
-            this,
+            sensorEventListener,
             manager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-            SensorManager.SENSOR_DELAY_GAME
+            SensorManager.SENSOR_DELAY_UI
         )
         initValues(context, attrs)
         updateLayout()
@@ -86,37 +115,39 @@ class Compass : RelativeLayout, SensorEventListener {
 
     private fun initValues(context: Context, attrs: AttributeSet?) {
         val typedArray = context.theme.obtainStyledAttributes(attrs, R.styleable.Compass, 0, 0)
-        mShowBorder = typedArray.getBoolean(R.styleable.Compass_show_border, DEFAULT_SHOW_BORDER)
-        mBorderColor = typedArray.getColor(R.styleable.Compass_border_color, DEFAULT_BORDER_COLOR)
-        mDegreesColor = typedArray.getColor(R.styleable.Compass_degree_color, Color.BLACK)
-        mShowOrientationLabels = typedArray.getBoolean(
+        showBorder = typedArray.getBoolean(R.styleable.Compass_show_border, DEFAULT_SHOW_BORDER)
+        borderColor = typedArray.getColor(R.styleable.Compass_border_color, DEFAULT_BORDER_COLOR)
+        degreesColor = typedArray.getColor(R.styleable.Compass_degree_color, Color.BLACK)
+        showOrientationLabels = typedArray.getBoolean(
             R.styleable.Compass_show_orientation_labels,
             DEFAULT_SHOW_ORIENTATION_LABEL
         )
-        mOrientationLabelsColor = typedArray.getColor(
+        orientationLabelsColor = typedArray.getColor(
             R.styleable.Compass_orientation_labels_color,
             DEFAULT_ORIENTATION_LABEL_COLOR
         )
-        mDegreeValueColor = typedArray.getColor(R.styleable.Compass_degree_value_color, Color.BLACK)
-        mShowDegreeValue =
+        degreeValueColor = typedArray.getColor(R.styleable.Compass_degree_value_color, Color.BLACK)
+        showDegreeValue =
             typedArray.getBoolean(R.styleable.Compass_show_degree_value, DEFAULT_SHOW_DEGREE_VALUE)
-        mDegreesStep = typedArray.getInt(R.styleable.Compass_degrees_step, DEFAULT_DEGREES_STEP)
-        require(mDegreesStep in 1..359 && 360 % mDegreesStep == 0) {
-            "Invalid degree step {$mDegreesStep}"
+        degreesStep = typedArray.getInt(R.styleable.Compass_degrees_step, DEFAULT_DEGREES_STEP)
+        require(degreesStep in 1..359 && 360 % degreesStep == 0) {
+            "Invalid degree step {$degreesStep}"
         }
-        mNeedle = typedArray.getDrawable(R.styleable.Compass_needle)
+        needle = typedArray.getDrawable(R.styleable.Compass_needle)
+        precision = typedArray.getInt(R.styleable.Compass_precision, DEFAULT_PRECISION)
+        require(precision in 0..4) { "Invalid precision {$precision}" }
         typedArray.recycle()
     }
 
     private fun updateLayout() {
-        mDegreeTextView = findViewById(R.id.tv_degree)
+        degreeTextView = findViewById(R.id.tv_degree)
         val compassSkeleton = findViewById<CompassSkeleton>(R.id.compass_skeleton)
-        compassSkeleton.setDegreesColor(mDegreesColor)
-        compassSkeleton.setShowOrientationLabel(mShowOrientationLabels)
-        compassSkeleton.setShowBorder(mShowBorder)
-        compassSkeleton.setBorderColor(mBorderColor)
-        compassSkeleton.setDegreesStep(mDegreesStep)
-        compassSkeleton.setOrientationLabelsColor(mOrientationLabelsColor)
+        compassSkeleton.setDegreesColor(degreesColor)
+        compassSkeleton.setShowOrientationLabel(showOrientationLabels)
+        compassSkeleton.setShowBorder(showBorder)
+        compassSkeleton.setBorderColor(borderColor)
+        compassSkeleton.setDegreesStep(degreesStep)
+        compassSkeleton.setOrientationLabelsColor(orientationLabelsColor)
         val dataLayout = findViewById<View>(R.id.data_layout)
         compassSkeleton.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
             override fun onGlobalLayout() {
@@ -132,31 +163,42 @@ class Compass : RelativeLayout, SensorEventListener {
                 val dataPaddingTop = (width * DATA_PADDING).toInt()
                 dataLayout.setPadding(0, dataPaddingTop, 0, 0)
                 val degreeTextSize = width * TEXT_SIZE_FACTOR
-                mDegreeTextView.textSize = degreeTextSize
+                degreeTextView.textSize = degreeTextSize
             }
         })
-        mDegreeTextView.setTextColor(mDegreeValueColor)
-        if (mShowDegreeValue) {
-            mDegreeTextView.visibility = VISIBLE
+        degreeTextView.setTextColor(degreeValueColor)
+        if (showDegreeValue) {
+            degreeTextView.visibility = VISIBLE
         } else {
-            mDegreeTextView.visibility = GONE
+            degreeTextView.visibility = GONE
         }
     }
 
     private fun updateNeedle() {
-        if (mNeedle == null) {
-            mNeedle = ContextCompat.getDrawable(context, R.drawable.ic_needle)
+        if (needle == null) {
+            needle = ContextCompat.getDrawable(context, R.drawable.ic_needle)
         }
         mNeedleImageView = findViewById(R.id.iv_needle)
-        mNeedleImageView.setImageDrawable(mNeedle)
+        mNeedleImageView.setImageDrawable(needle)
     }
 
-    override fun onSensorChanged(event: SensorEvent) {
-        mCompassListener?.onSensorChanged(event)
-        val degree = event.values[0].roundToLong().toFloat()
+    private fun Float.round(decimals: Int): Float {
+        var multiplier = 1.0f
+        repeat(decimals) { multiplier *= 10 }
+        return round(this * multiplier) / multiplier
+    }
+
+    fun setTargetBearing(bearing: Int) {
+        targetBearing = -bearing
+        // Force a re-calc on set
+        onDegreeChanged(currentDegree + targetBearing)
+    }
+
+    private fun onDegreeChanged(newDegree: Float) {
+        // TODO needle does a 360 when passing through 0°N, avoid animation
         val rotateAnimation = RotateAnimation(
-            mCurrentDegree,
-            -degree,
+            currentDegree,
+            newDegree,
             Animation.RELATIVE_TO_SELF,
             0.5f,
             Animation.RELATIVE_TO_SELF,
@@ -165,17 +207,12 @@ class Compass : RelativeLayout, SensorEventListener {
         rotateAnimation.duration = 210
         rotateAnimation.fillAfter = true
         mNeedleImageView.startAnimation(rotateAnimation)
-        updateTextDirection(mCurrentDegree.toDouble())
-        mCurrentDegree = -degree
+        updateTextDirection(currentDegree)
+        currentDegree = newDegree
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-        mCompassListener?.onAccuracyChanged(sensor, accuracy)
-    }
-
-    private fun updateTextDirection(degree: Double) {
+    private fun updateTextDirection(degree: Float) {
         val deg = 360 + degree
-        val decimalFormat = DecimalFormat("###.#")
         val value: String = if (deg > 0 && deg <= 90) {
             String.format("%s%s NE", decimalFormat.format(-degree), DEGREE)
         } else if (deg > 90 && deg <= 180) {
@@ -185,11 +222,11 @@ class Compass : RelativeLayout, SensorEventListener {
         } else {
             String.format("%s%s WN", decimalFormat.format(-degree), DEGREE)
         }
-        mDegreeTextView.text = value
+        degreeTextView.text = value
     }
 
-    fun setListener(compassListener: CompassListener?) {
-        mCompassListener = compassListener
+    fun setListener(listener: CompassListener?) {
+        compassListener = listener
     }
 
 }

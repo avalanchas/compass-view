@@ -6,6 +6,7 @@ ext {
     project_javaVersion = JavaVersion.VERSION_11
 
     androidx_appcompat_version = '1.6.1'
+    timber_version = '5.0.1'
 }
 
 buildscript {
