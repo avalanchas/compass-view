@@ -17,6 +17,7 @@
         <!-- Precision in decimals after the decimal point. Default is 0. Higher values result in
             significantly reduced performance -->
         <attr name="precision" format="integer" />
+        <attr name="needle_padding" format="float" />
 
     </declare-styleable>
 

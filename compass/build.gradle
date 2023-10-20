@@ -4,7 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-def libraryVersionName = '2.1.2'
+def libraryVersionName = '2.2.0-SNAPSHOT'
 
 android {
     namespace 'com.elliecoding.compass'
@@ -13,7 +13,6 @@ android {
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
         versionName libraryVersionName
     }
 
@@ -22,6 +21,10 @@ android {
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 
     compileOptions {

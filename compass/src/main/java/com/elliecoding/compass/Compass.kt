@@ -13,16 +13,15 @@ import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
-import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.TextView
 import androidx.core.content.ContextCompat
+import com.elliecoding.compass.databinding.CompassLayoutBinding
 import timber.log.Timber
 import java.text.DecimalFormat
 import kotlin.math.absoluteValue
 import kotlin.math.round
 
-private const val NEEDLE_PADDING = 0.17f
+private const val DEFAULT_NEEDLE_PADDING = 0.01f
 private const val DEGREE = "\u00b0"
 private const val DATA_PADDING = 0.35f
 private const val TEXT_SIZE_FACTOR = 0.014f
@@ -35,8 +34,7 @@ private const val DEFAULT_SHOW_BORDER = false
 private const val DEFAULT_BORDER_COLOR = Color.BLACK
 
 class Compass : RelativeLayout {
-    private lateinit var mNeedleImageView: ImageView
-    private lateinit var degreeTextView: TextView
+    private lateinit var binding: CompassLayoutBinding
     private val decimalFormat = DecimalFormat("###.#")
     private var currentDegree = 0f
     private var showBorder = false
@@ -48,6 +46,7 @@ class Compass : RelativeLayout {
     private var showDegreeValue = false
     private var degreesStep = DEFAULT_DEGREES_STEP
     private var precision = DEFAULT_PRECISION
+    private var needlePadding = DEFAULT_NEEDLE_PADDING
     private var needle: Drawable? = null
     private var compassListener: CompassListener? = null
     private var targetBearing: Int = 0
@@ -101,7 +100,11 @@ class Compass : RelativeLayout {
         if (BuildConfig.DEBUG && Timber.forest().isEmpty()) {
             Timber.plant(Timber.DebugTree())
         }
-        LayoutInflater.from(context).inflate(R.layout.compass_layout, this, true)
+        binding = CompassLayoutBinding.inflate(
+            LayoutInflater.from(context),
+            this,
+            true
+        )
         val manager = getContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         manager.registerListener(
             sensorEventListener,
@@ -136,11 +139,12 @@ class Compass : RelativeLayout {
         needle = typedArray.getDrawable(R.styleable.Compass_needle)
         precision = typedArray.getInt(R.styleable.Compass_precision, DEFAULT_PRECISION)
         require(precision in 0..4) { "Invalid precision {$precision}" }
+        needlePadding =
+            typedArray.getFloat(R.styleable.Compass_needle_padding, DEFAULT_NEEDLE_PADDING)
         typedArray.recycle()
     }
 
     private fun updateLayout() {
-        degreeTextView = findViewById(R.id.tv_degree)
         val compassSkeleton = findViewById<CompassSkeleton>(R.id.compass_skeleton)
         compassSkeleton.setDegreesColor(degreesColor)
         compassSkeleton.setShowOrientationLabel(showOrientationLabels)
@@ -148,12 +152,12 @@ class Compass : RelativeLayout {
         compassSkeleton.setBorderColor(borderColor)
         compassSkeleton.setDegreesStep(degreesStep)
         compassSkeleton.setOrientationLabelsColor(orientationLabelsColor)
-        val dataLayout = findViewById<View>(R.id.data_layout)
+        val dataLayout = findViewById<View>(R.id.compass_data)
         compassSkeleton.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 compassSkeleton.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 val width = compassSkeleton.measuredWidth
-                val needlePadding = (width * NEEDLE_PADDING).toInt()
+                val needlePadding = (width * DEFAULT_NEEDLE_PADDING).toInt()
                 compassSkeleton.setPadding(
                     needlePadding,
                     needlePadding,
@@ -163,14 +167,14 @@ class Compass : RelativeLayout {
                 val dataPaddingTop = (width * DATA_PADDING).toInt()
                 dataLayout.setPadding(0, dataPaddingTop, 0, 0)
                 val degreeTextSize = width * TEXT_SIZE_FACTOR
-                degreeTextView.textSize = degreeTextSize
+                binding.compassDegreeText.textSize = degreeTextSize
             }
         })
-        degreeTextView.setTextColor(degreeValueColor)
+        binding.compassDegreeText.setTextColor(degreeValueColor)
         if (showDegreeValue) {
-            degreeTextView.visibility = VISIBLE
+            binding.compassDegreeText.visibility = VISIBLE
         } else {
-            degreeTextView.visibility = GONE
+            binding.compassDegreeText.visibility = GONE
         }
     }
 
@@ -178,8 +182,7 @@ class Compass : RelativeLayout {
         if (needle == null) {
             needle = ContextCompat.getDrawable(context, R.drawable.ic_needle)
         }
-        mNeedleImageView = findViewById(R.id.iv_needle)
-        mNeedleImageView.setImageDrawable(needle)
+        binding.compassNeedle.setImageDrawable(needle)
     }
 
     private fun Float.round(decimals: Int): Float {
@@ -206,7 +209,7 @@ class Compass : RelativeLayout {
         )
         rotateAnimation.duration = 210
         rotateAnimation.fillAfter = true
-        mNeedleImageView.startAnimation(rotateAnimation)
+        binding.compassNeedle.startAnimation(rotateAnimation)
         updateTextDirection(currentDegree)
         currentDegree = newDegree
     }
@@ -222,7 +225,7 @@ class Compass : RelativeLayout {
         } else {
             String.format("%s%s WN", decimalFormat.format(-degree), DEGREE)
         }
-        degreeTextView.text = value
+        binding.compassDegreeText.text = value
     }
 
     fun setListener(listener: CompassListener?) {
