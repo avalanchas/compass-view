@@ -133,7 +133,7 @@ class Compass : RelativeLayout {
         showDegreeValue =
             typedArray.getBoolean(R.styleable.Compass_show_degree_value, DEFAULT_SHOW_DEGREE_VALUE)
         degreesStep = typedArray.getInt(R.styleable.Compass_degrees_step, DEFAULT_DEGREES_STEP)
-        require(degreesStep in 1..359 && 360 % degreesStep == 0) {
+        require(degreesStep == NO_STEPS || (degreesStep in 1..359 && 360 % degreesStep == 0)) {
             "Invalid degree step {$degreesStep}"
         }
         needle = typedArray.getDrawable(R.styleable.Compass_needle)

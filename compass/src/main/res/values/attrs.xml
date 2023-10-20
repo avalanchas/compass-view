@@ -10,7 +10,8 @@
         <attr name="degree_value_color" format="color" />
         <attr name="needle" format="reference" />
         <!-- Step interval of the tick lines on the compass. Note that 360 must be divisible by this
-            number, otherwise an IllegalArgumentException will be thrown -->
+            number, otherwise an IllegalArgumentException will be thrown. "-1" is also a valid value
+            and means that no tick lines will be drawn at all -->
         <attr name="degrees_step" format="integer" />
         <attr name="show_border" format="boolean" />
         <attr name="border_color" format="color" />
