@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'edu.arbelkilani.compass'
+    namespace 'com.elliecoding.compass'
     compileSdk = rootProject.ext.compileSdkVersion
     buildToolsVersion = rootProject.ext.buildToolsVersion
     defaultConfig {

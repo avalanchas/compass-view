@@ -1,8 +1,8 @@
-package edu.arbelkilani.compassview
+package com.elliecoding.compassview
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import edu.arbelkilani.compassview.databinding.ActivityMainBinding
+import com.elliecoding.compassview.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding

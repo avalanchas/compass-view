@@ -1,4 +1,4 @@
-package edu.arbelkilani.compass
+package com.elliecoding.compass
 
 import android.content.Context
 import android.graphics.Color

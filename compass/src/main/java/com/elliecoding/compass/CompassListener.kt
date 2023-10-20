@@ -1,4 +1,4 @@
-package edu.arbelkilani.compass
+package com.elliecoding.compass
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent

@@ -9,7 +9,7 @@
     android:padding="20dp"
     tools:context=".MainActivity">
 
-    <edu.arbelkilani.compass.Compass
+    <com.elliecoding.compass.Compass
         android:id="@+id/compass"
         android:layout_width="300dp"
         android:layout_height="300dp"

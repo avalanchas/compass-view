@@ -1,4 +1,4 @@
-package edu.arbelkilani.compass
+package com.elliecoding.compass
 
 import android.content.Context
 import android.graphics.*
@@ -32,11 +32,11 @@ internal class CompassSkeleton : RelativeLayout {
     private var mBorderColor = DEFAULT_BORDER_COLOR
 
     constructor(context: Context) : super(context) {
-        init(context, null)
+        init(context)
     }
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        init(context, attrs)
+        init(context)
     }
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
@@ -44,10 +44,10 @@ internal class CompassSkeleton : RelativeLayout {
         attrs,
         defStyleAttr
     ) {
-        init(context, attrs)
+        init(context)
     }
 
-    private fun init(context: Context, attrs: AttributeSet?) {
+    private fun init(context: Context) {
         labelEast = context.getString(R.string.label_east)
         labelNorth = context.getString(R.string.label_north)
         labelWest = context.getString(R.string.label_west)
