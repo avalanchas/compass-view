@@ -3,9 +3,8 @@
 [![](https://jitpack.io/v/avalanchas/compass-view.svg)](https://jitpack.io/#avalanchas/compass-view)
 [![API](https://img.shields.io/badge/API-19%2B-green.svg?style=flat)]()
 
-Compass view with styling options. 
-
-![compass view](https://i.makeagif.com/media/5-13-2018/LtaULi.gif)
+Compass view with a lot of styling options. 
+![image](https://github.com/avalanchas/compass-view/assets/6008266/4d07589c-16f9-49d2-a570-9df3c8e27222)
 
 ## Setup
 
