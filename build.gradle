@@ -1,8 +1,8 @@
 ext {
     minSdkVersion = 19
-    targetSdkVersion = 33
-    compileSdkVersion = 33
-    buildToolsVersion = '33.0.2'
+    targetSdkVersion = 34
+    compileSdkVersion = 34
+    buildToolsVersion = '34.0.0'
     project_javaVersion = JavaVersion.VERSION_11
 
     androidx_appcompat_version = '1.6.1'
@@ -11,7 +11,7 @@ ext {
 
 buildscript {
     ext {
-        kotlinVersion = '1.8.0'
+        kotlinVersion = '1.8.21'
     }
 
     repositories {
@@ -20,7 +20,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
     }
@@ -34,6 +34,6 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
+tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }

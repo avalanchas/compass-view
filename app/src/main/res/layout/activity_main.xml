@@ -13,6 +13,7 @@
         android:id="@+id/compass"
         android:layout_width="300dp"
         android:layout_height="300dp"
+        android:layout_gravity="center_horizontal"
         app:border_color="@android:color/holo_red_light"
         app:degree_color="@android:color/holo_purple"
         app:degree_value_color="@android:color/holo_green_dark"
@@ -26,6 +27,8 @@
         android:id="@+id/input_target"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
         android:hint="Enter target bearing between 0 and 360"
         android:inputType="number" />
 
@@ -33,6 +36,7 @@
         android:id="@+id/submit_target"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="Submit" />
 
 </LinearLayout>
